@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>B2 Pflege Master App</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #eef6f7;
+}
+
+button {
+  margin: 8px;
+  padding: 12px;
+  width: 320px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+textarea {
+  width: 300px;
+  font-size: 16px;
+}
+
+.hidden { display: none; }
+
+.correct { background-color: #a5d6a7; }
+.wrong { background-color: #ef9a9a; }
+
+</style>
+</head>
+
+<body>
+
+<h1>Welcome Amberg Students 👋</h1>
+<h2>B2 Pflege Master App 🏥</h2>
+
+<!-- MENU -->
+<div id="menu">
+  <button onclick="startVocab()">Level 1: Wortschatz Trainer</button>
+  <button onclick="startSpeaking()">TELC Speaking Mode</button>
+  <button onclick="startWriting()">Level 3: Schreiben & Grammatik</button>
+</div>
+
+<!-- VOCAB -->
+<div id="vocab" class="hidden">
+  <h2>Wortschatz Training</h2>
+  <h3 id="word"></h3>
+  <div id="options"></div>
+  <p id="feedback"></p>
+  <button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+<!-- SPEAKING -->
+<div id="speaking" class="hidden">
+  <h2>TELC Speaking Mode</h2>
+
+  <p id="situation"></p>
+  <p id="task"></p>
+
+  <p><b>Guide:</b></p>
+  <p id="guide"></p>
+
+  <button onclick="showAnswer()">Show Sample Answer</button>
+  <p id="answer"></p>
+
+  <button onclick="nextSpeaking()">Next ➡️</button>
+  <button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+<!-- WRITING -->
+<div id="writing" class="hidden">
+  <h2>Schreiben & Grammatik ✍️</h2>
+
+  <p id="writingTask"></p>
+
+  <textarea id="userInput" rows="4" placeholder="Schreiben Sie hier..."></textarea>
+
+  <br><br>
+  <button onclick="checkSentence()">Überprüfen</button>
+
+  <p id="correction"></p>
+  <p id="feedbackWriting"></p>
+
+  <button onclick="nextWriting()">Next ➡️</button>
+  <button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+<script>
+
+// ================= VOCAB =================
+const vocab = [
+["das Krankenhaus","hospital"],
+["die Station","ward"],
+["der Patient","patient"],
+["die Pflege","care"],
+["das Medikament","medication"],
+["der Schmerz","pain"],
+["Fieber","fever"],
+["Husten","cough"],
+["Atemnot","shortness of breath"],
+["die Tablette","tablet"],
+["die Spritze","injection"],
+["die Infusion","infusion"],
+["waschen","to wash"],
+["mobilisieren","to mobilize"],
+["Blutdruck","blood pressure"],
+["Puls","pulse"],
+["Temperatur","temperature"],
+["Notfall","emergency"],
+["bewusstlos","unconscious"],
+["die Wunde","wound"],
+["der Verband","bandage"],
+["desinfizieren","disinfect"],
+["die Haut","skin"],
+["der Katheter","catheter"],
+["Demenz","dementia"],
+["Rollstuhl","wheelchair"],
+["Pflegeheim","nursing home"],
+["Dokumentation","documentation"],
+["Team","team"],
+["Pflegeplan","care plan"]
+];
+
+let current;
+
+function startVocab() {
+  hideAll();
+  document.getElementById("vocab").classList.remove("hidden");
+  nextWord();
+}
+
+function nextWord() {
+  current = vocab[Math.floor(Math.random()*vocab.length)];
+  document.getElementById("word").innerText = current[0];
+
+  let options = [current[1]];
+
+  while(options.length < 4){
+    let rand = vocab[Math.floor(Math.random()*vocab.length)][1];
+    if(!options.includes(rand)) options.push(rand);
+  }
+
+  options.sort(()=>Math.random()-0.5);
+
+  let container = document.getElementById("options");
+  container.innerHTML = "";
+
+  options.forEach(opt=>{
+    let btn = document.createElement("button");
+    btn.innerText = opt;
+
+    btn.onclick = ()=>{
+      if(opt === current[1]){
+        btn.classList.add("correct");
+        document.getElementById("feedback").innerText = "Richtig ✅";
+      } else {
+        btn.classList.add("wrong");
+        document.getElementById("feedback").innerText =
+          "Falsch ❌ → " + current[1];
+      }
+      setTimeout(nextWord,1000);
+    };
+
+    container.appendChild(btn);
+  });
+}
+
+// ================= SPEAKING =================
+const speaking = [
+{
+situation: "Ein Patient hat Angst vor einer Operation.",
+task: "Beruhigen Sie den Patienten.",
+guide: "Warum Angst? Was sagen Sie?",
+answer: "Ich verstehe Ihre Angst. Die Operation ist sicher."
+},
+{
+situation: "Ein Patient hat Schmerzen.",
+task: "Reagieren Sie professionell.",
+guide: "Fragen + Hilfe anbieten",
+answer: "Wo haben Sie Schmerzen? Ich helfe Ihnen."
+}
+];
+
+let sIndex = 0;
+
+function startSpeaking(){
+  hideAll();
+  document.getElementById("speaking").classList.remove("hidden");
+  loadSpeaking();
+}
+
+function loadSpeaking(){
+  let s = speaking[sIndex];
+  document.getElementById("situation").innerText = "Situation: " + s.situation;
+  document.getElementById("task").innerText = "Aufgabe: " + s.task;
+  document.getElementById("guide").innerText = s.guide;
+  document.getElementById("answer").innerText = "";
+}
+
+function showAnswer(){
+  document.getElementById("answer").innerText = speaking[sIndex].answer;
+}
+
+function nextSpeaking(){
+  sIndex = (sIndex + 1) % speaking.length;
+  loadSpeaking();
+}
+
+// ================= WRITING =================
+const writingTasks = [
+{
+task: "Schreiben Sie: Patient hat Schmerzen.",
+correct: "Der Patient hat Schmerzen."
+},
+{
+task: "Schreiben Sie: Ich helfe dem Patienten.",
+correct: "Ich helfe dem Patienten."
+},
+{
+task: "Schreiben Sie: Ich messe den Blutdruck.",
+correct: "Ich messe den Blutdruck."
+}
+];
+
+let wIndex = 0;
+
+function startWriting(){
+  hideAll();
+  document.getElementById("writing").classList.remove("hidden");
+  loadWriting();
+}
+
+function loadWriting(){
+  document.getElementById("writingTask").innerText =
+    writingTasks[wIndex].task;
+
+  document.getElementById("userInput").value = "";
+  document.getElementById("correction").innerText = "";
+  document.getElementById("feedbackWriting").innerText = "";
+}
+
+function checkSentence(){
+  let input = document.getElementById("userInput").value.trim();
+  let correct = writingTasks[wIndex].correct;
+
+  if(input.toLowerCase() === correct.toLowerCase()){
+    document.getElementById("correction").innerText = "Richtig ✅";
+    document.getElementById("feedbackWriting").innerText = "Sehr gut!";
+  } else {
+    document.getElementById("correction").innerText =
+      "Korrektur: " + correct;
+
+    document.getElementById("feedbackWriting").innerText =
+      "Achten Sie auf Artikel und Verbposition.";
+  }
+}
+
+function nextWriting(){
+  wIndex = (wIndex + 1) % writingTasks.length;
+  loadWriting();
+}
+
+// ================= GENERAL =================
+function hideAll(){
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("vocab").classList.add("hidden");
+  document.getElementById("speaking").classList.add("hidden");
+  document.getElementById("writing").classList.add("hidden");
+}
+
+function backMenu(){
+  hideAll();
+  document.getElementById("menu").classList.remove("hidden");
+}
+
+</script>
+
+</body>
+</html>
